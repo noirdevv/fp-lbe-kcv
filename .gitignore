@@ -1,3 +1,5 @@
 *.csv
 .idea*
 .ipynb*
+/venv/
+.vscode/
