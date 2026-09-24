@@ -1,9 +1,8 @@
---extra-index-url https://download.pytorch.org/whl/cpu
 streamlit
-joblib
-numpy
-Pillow
-scikit-learn
 torch
 torchvision
-opencv-python
+scipy
+opencv-python-headless
+pillow
+joblib
+numpy
