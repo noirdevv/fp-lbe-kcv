@@ -43,10 +43,6 @@ def load_resnet_extractor():
 pca, scaler, ml_model = load_pipeline_artifacts()
 cnn_extractor, cnn_transform = load_resnet_extractor()
 
-
-# ==========================================
-# 2. DEFINISI FUNGSI OPENCV (HAND-CRAFTED FEATURES)
-# ==========================================
 def calculate_hasler_susstrunk_colorfulness(image_path):
     img = cv2.imread(image_path)
     B, G, R = cv2.split(img.astype(float))
@@ -138,10 +134,6 @@ def extract_layout_areas(image_path):
             image_area_total += box_area
     return text_area_total / total_area_screen, image_area_total / total_area_screen
 
-
-# ==========================================
-# 3. FUNGSI INFERENCE UTAMA
-# ==========================================
 def extract_cnn_features(image_path):
     """Cabang 1: Ekstraksi fitur visual abstrak (30 Dimensi)"""
     img_pil = Image.open(image_path).convert('RGB')
@@ -153,13 +145,11 @@ def extract_cnn_features(image_path):
 
 def extract_opencv_features(image_path):
     """Cabang 2: Eksekusi semua fungsi OpenCV (Total 22 Dimensi)"""
-    
-    # 1. Colorfulness (1 fitur)
+
     colorfulness = calculate_hasler_susstrunk_colorfulness(image_path)
-    
-    # 2. W3C Colors (16 fitur persentase warna)
+
     w3c_colors_dict = extract_w3c_colors(image_path)
-    # Urutan wajib sama dengan kolom saat training!
+
     w3c_keys = ['black', 'silver', 'gray', 'white', 'maroon', 'red', 'purple', 
                 'fuchsia', 'green', 'lime', 'olive', 'yellow', 'navy', 'blue', 'teal', 'aqua']
     w3c_features = [w3c_colors_dict[key] for key in w3c_keys]
@@ -179,10 +169,6 @@ def extract_opencv_features(image_path):
     # Kembalikan sebagai numpy array 2D bentuk (1, 22)
     return np.array(all_cv_features).reshape(1, -1)
 
-
-# ==========================================
-# 4. ANTARMUKA STREAMLIT
-# ==========================================
 uploaded_file = st.file_uploader(
     "Upload a website screenshot (.png, .jpg, .jpeg):",
     type=["png", "jpg", "jpeg"],
@@ -221,7 +207,7 @@ if uploaded_file is not None:
 
             st.metric(
                 label="Predicted Aesthetic Score",
-                value=f"{pred_flat[0]:.2f}/10.0" 
+                value=f"{(pred_flat[0] / 7 * 10):.2f}/10.0"
             )
 
         except Exception as err:
