@@ -2,6 +2,7 @@ import os
 import tempfile
 import joblib
 import numpy as np
+import pandas as pd
 import cv2
 import torch
 import torch.nn as nn
@@ -15,7 +16,7 @@ st.set_page_config(
     page_title="Website Rating Predictor", page_icon="🌐", layout="centered"
 )
 
-st.title("🌐 Website Visual Rating Predictor")
+st.title("🌐 SeraSi: Sistem Rating Website")
 st.write("Upload a screenshot of any website to generate its predicted visual appeal ratings.")
 
 @st.cache_resource
@@ -134,40 +135,35 @@ def extract_layout_areas(image_path):
             image_area_total += box_area
     return text_area_total / total_area_screen, image_area_total / total_area_screen
 
+
 def extract_cnn_features(image_path):
-    """Cabang 1: Ekstraksi fitur visual abstrak (30 Dimensi)"""
     img_pil = Image.open(image_path).convert('RGB')
     tensor = cnn_transform(img_pil).unsqueeze(0)
     with torch.no_grad():
         cnn_raw = cnn_extractor(tensor).squeeze().numpy().reshape(1, -1)
-    cnn_compressed = pca.transform(cnn_raw)
-    return cnn_compressed
+    cnn_compressed = pca.transform(cnn_raw)[0]
+
+    cnn_dict = {f'cnn_feat_{i}': cnn_compressed[i] for i in range(len(cnn_compressed))}
+    return cnn_dict
+
 
 def extract_opencv_features(image_path):
-    """Cabang 2: Eksekusi semua fungsi OpenCV (Total 22 Dimensi)"""
-
     colorfulness = calculate_hasler_susstrunk_colorfulness(image_path)
-
     w3c_colors_dict = extract_w3c_colors(image_path)
-
-    w3c_keys = ['black', 'silver', 'gray', 'white', 'maroon', 'red', 'purple', 
-                'fuchsia', 'green', 'lime', 'olive', 'yellow', 'navy', 'blue', 'teal', 'aqua']
-    w3c_features = [w3c_colors_dict[key] for key in w3c_keys]
-    
-    # 3. Symmetry & Balance (2 fitur)
     symmetry, balance = calculate_horizontal_symmetry_and_balance(image_path)
-    
-    # 4. QuadTree Complexity (1 fitur)
     quad_leaves = get_quadtree_leaves(image_path)
-    
-    # 5. Layout Areas (2 fitur)
     text_ratio, image_ratio = extract_layout_areas(image_path)
-    
-    # Rakit menjadi satu list 1D
-    all_cv_features = [colorfulness] + w3c_features + [symmetry, balance, quad_leaves, text_ratio, image_ratio]
-    
-    # Kembalikan sebagai numpy array 2D bentuk (1, 22)
-    return np.array(all_cv_features).reshape(1, -1)
+
+    cv_dict = {
+        'colorfulness': colorfulness,
+        'symmetry': symmetry,
+        'balance': balance,
+        'quadtree_leaves': quad_leaves,
+        'text_area_ratio': text_ratio,
+        'image_area_ratio': image_ratio,
+        **w3c_colors_dict
+    }
+    return cv_dict
 
 uploaded_file = st.file_uploader(
     "Upload a website screenshot (.png, .jpg, .jpeg):",
@@ -184,30 +180,36 @@ if uploaded_file is not None:
         suffix = os.path.splitext(uploaded_file.name)[-1].lower()
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
             temp_file.write(uploaded_file.getbuffer())
+            temp_file.flush()
             temp_file_path = temp_file.name
 
         try:
             with st.spinner("Analyzing semantics and visual complexity..."):
-                # Eksekusi paralel semu (Synchronous)
-                feat_cnn = extract_cnn_features(temp_file_path)
-                feat_cv = extract_opencv_features(temp_file_path)
-                
-                # Late Fusion (Misal: 30 kolom + 22 kolom = 52 kolom)
-                hybrid_features = np.hstack((feat_cnn, feat_cv))
-                
-                # Standardisasi skala menggunakan acuan training
-                hybrid_scaled = scaler.transform(hybrid_features)
-                
-                # Prediksi skor akhir
+                feat_cnn_dict = extract_cnn_features(temp_file_path)
+                feat_cv_dict = extract_opencv_features(temp_file_path)
+
+                # Combine dictionaries
+                full_features_dict = {**feat_cnn_dict, **feat_cv_dict}
+
+                # Align columns explicitly using the scaler's training columns
+                feature_names = list(scaler.feature_names_in_)
+                input_df = pd.DataFrame([full_features_dict])[feature_names]
+
+                # Scale features
+                hybrid_scaled = scaler.transform(input_df)
+
+                # Predict
                 prediction = ml_model.predict(hybrid_scaled)
                 pred_flat = np.ravel(prediction)
+
+            final_pred = pred_flat[0] / 7.0 * 10.0
 
             st.success("Analysis complete!")
             st.subheader("Predicted Human Ratings")
 
             st.metric(
                 label="Predicted Aesthetic Score",
-                value=f"{(pred_flat[0] / 7 * 10):.2f}/10.0"
+                value=f"{final_pred:.2f}/10.0"
             )
 
         except Exception as err:
