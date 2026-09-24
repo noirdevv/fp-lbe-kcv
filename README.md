@@ -55,3 +55,14 @@
 
 ## Dataset Training Model
 Sumber Dataset: [Datasets on Website Aesthetics for Machine Learning](https://github.com/calista-ai/website-aesthetics-datasets?utm_source=chatgpt.com)
+
+## Creators
+Created by: Tim anak kampung tiap hari luntang lantung...
+
+<img width="245" height="218" alt="image" src="https://github.com/user-attachments/assets/791d71e5-eac5-48a9-87a5-74969e398df6" />
+<img width="245" height="218" alt="image" src="https://github.com/user-attachments/assets/9188fe00-cd20-4801-9c98-57cd2108ba64" />
+<img width="245" height="218" alt="image" src="https://github.com/user-attachments/assets/92e99780-61ce-42fc-89ae-73c1d5cd75e7" />
+<img width="245" height="218" alt="image" src="https://github.com/user-attachments/assets/ef86d1ea-608a-4e11-863e-c58734d00657" />
+
+...as a final project of KCV's Lab-Based Education 2026. thank you so much for visiting! 🤩
+
