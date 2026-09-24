@@ -1,1 +1,3 @@
-ae_only_unambiguous_1000.csv
+*.csv
+.idea*
+.ipynb*
