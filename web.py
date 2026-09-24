@@ -202,14 +202,14 @@ if uploaded_file is not None:
                 prediction = ml_model.predict(hybrid_scaled)
                 pred_flat = np.ravel(prediction)
 
-            final_pred = pred_flat[0] / 7.0 * 10.0
+            final_pred = pred_flat[0] / 7.0 * 100.0
 
             st.success("Analysis complete!")
             st.subheader("Predicted Human Ratings")
 
             st.metric(
                 label="Predicted Aesthetic Score",
-                value=f"{final_pred:.2f}/10.0"
+                value=f"{final_pred:.2f}/100"
             )
 
         except Exception as err:
