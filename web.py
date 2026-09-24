@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 st.title("🌐 SeraSi: Sistem Rating Website")
-st.write("Upload a screenshot of any website to generate its predicted visual appeal ratings.")
+st.write("Upload screenshot website duluu buat dapet rating dari Mba Sera 😘🌹")
 
 @st.cache_resource
 def load_pipeline_artifacts():
@@ -166,17 +166,32 @@ def extract_opencv_features(image_path):
     return cv_dict
 
 uploaded_file = st.file_uploader(
-    "Upload a website screenshot (.png, .jpg, .jpeg):",
+    "Wajib extension ini yaa rek (.png, .jpg, .jpeg):",
     type=["png", "jpg", "jpeg"],
 )
 
 if uploaded_file is not None:
     preview_image = Image.open(uploaded_file)
     st.image(
-        preview_image, caption="Uploaded Website Preview", use_container_width=True
+        preview_image, caption="Screenshot preview", use_container_width=True
     )
 
-    if st.button("Predict Ratings", type="primary"):
+    st.markdown("""
+        <style>
+        div.stButton > button[kind="primary"] {
+            background-color: #1E88E5 !important;
+            color: white !important;
+            border-radius: 8px !important;
+            border: none !important;
+        }
+        div.stButton > button[kind="primary"]:hover {
+            background-color: #1565C0 !important;
+            color: white !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    if st.button("RATEE DONG MY SERA GWEH 💕", type="primary"):
         suffix = os.path.splitext(uploaded_file.name)[-1].lower()
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
             temp_file.write(uploaded_file.getbuffer())
@@ -184,7 +199,7 @@ if uploaded_file is not None:
             temp_file_path = temp_file.name
 
         try:
-            with st.spinner("Analyzing semantics and visual complexity..."):
+            with st.spinner("Menganalisis semantik dan kompleksitas visual..."):
                 feat_cnn_dict = extract_cnn_features(temp_file_path)
                 feat_cv_dict = extract_opencv_features(temp_file_path)
 
@@ -204,16 +219,16 @@ if uploaded_file is not None:
 
             final_pred = pred_flat[0] / 7.0 * 100.0
 
-            st.success("Analysis complete!")
-            st.subheader("Predicted Human Ratings")
+            st.success("YEAY analisis berhasil!")
+            st.subheader("Prediksi menurut Mba Sera")
 
             st.metric(
-                label="Predicted Aesthetic Score",
+                label="Prediksi Skor Estetika",
                 value=f"{final_pred:.2f}/100"
             )
 
         except Exception as err:
-            st.error(f"Prediction failed: {err}")
+            st.error(f"NOO prediksi gagal: {err}")
 
         finally:
             if os.path.exists(temp_file_path):
