@@ -1,8 +1,10 @@
 streamlit
 torch
 torchvision
+scikit-learn
 scipy
-opencv-python-headless
-pillow
-joblib
+pandas
 numpy
+joblib
+pillow
+opencv-python-headless
